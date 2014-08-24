@@ -30,8 +30,8 @@ function transformFileOrDir(srcPath, srcRoot) {
 }
 
 function transformDir(srcPath, srcRoot) {
-  fs.readdirSync(srcPath).forEach(function (path) {
-    transformFileOrDir(path, srcRoot);
+  fs.readdirSync(srcPath).forEach(function (subPath) {
+    transformFileOrDir(path.join(srcPath, subPath), srcRoot);
   });
 }
 
@@ -64,8 +64,6 @@ function transformFile(srcFilename, srcRoot) {
 }
 
 argv._.forEach(function (srcPath) {
-  if (!fs.existsSync(srcPath)) {
-    console.warn('File or directory does not exist:', srcPath);
-  }
-  transformFileOrDir(srcPath);
+  if (fs.existsSync(srcPath)) transformFileOrDir(srcPath);
+  else console.warn('File or directory does not exist:', srcPath);
 });
