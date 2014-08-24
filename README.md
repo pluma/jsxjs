@@ -12,4 +12,4 @@ Converts JSX source files to JavaScript. Unlike the `jsx` CLI provided by `react
 
 # License
 
-The MIT/Expat license.
+The MIT/Expat license. For more information, see http://pluma.mit-license.org/ or the accompanying [LICENSE](https://github.com/pluma/jsxjs/blob/master/LICENSE) file.
