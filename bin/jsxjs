@@ -1,0 +1,71 @@
+#! /usr/bin/env node
+/*jshint node: true, -W014 */
+"use strict";
+var transform = require('react-tools').transform;
+var mkdirp = require('mkdirp');
+var fs = require('fs');
+var path = require('path');
+var argv = require('yargs')
+.usage('Usage: $0 [source path...] [output folder]')
+.example('$0 src lib', 'Convert files in "src" folder into "lib" folder')
+.boolean('all').alias('all', 'a')
+.describe('all', 'Convert all files, regardless of file extension.')
+.boolean('no-magic')
+.describe('no-magic', 'Disable special handling of missing @jsx pragmas.')
+.boolean('verbose').alias('verbose', 'v')
+.describe('verbose', 'Log all conversions.')
+.demand(2, 'Need to specify at least one source file/folder and the output folder.')
+.argv;
+var dest = argv._.pop();
+
+function transformFileOrDir(srcPath, srcRoot) {
+  var stat = fs.statSync(srcPath);
+  if (stat.isFile()) {
+    if (!srcRoot) srcRoot = fs.dirname(srcPath);
+    transformFile(srcPath, srcRoot);
+  } else if (stat.isDirectory()) {
+    if (!srcRoot) srcRoot = srcPath;
+    transformDir(srcPath, srcRoot);
+  }
+}
+
+function transformDir(srcPath, srcRoot) {
+  fs.readdirSync(srcPath).forEach(function (path) {
+    transformFileOrDir(path, srcRoot);
+  });
+}
+
+function transformFile(srcFilename, srcRoot) {
+  var ext = path.extname(srcFilename);
+  if (!argv.all && ext !== '.js' && ext !== '.jsx') return;
+
+  var content = fs.readFileSync(srcFilename, 'utf8');
+  var isJsx = argv.noMagic || content.indexOf('@jsx') !== -1;
+  if (!argv.noMagic && ext === '.jsx' && !isJsx) {
+    content = '/** @jsx React.DOM */\n' + content;
+    isJsx = true;
+  }
+
+  var destFilename = srcRoot
+  ? path.join(dest, path.relative(srcRoot, srcFilename))
+  : path.join(dest, path.basename(srcFilename));
+  var destDirname = path.dirname(destFilename);
+  if (ext !== '.js') {
+    destFilename = destFilename.slice(0, -ext.length) + '.js';
+  }
+
+  mkdirp.sync(destDirname, parseInt('0775', 8));
+
+  if (isJsx) content = transform(content);
+  fs.writeFileSync(destFilename, content);
+  if (argv.verbose) {
+    console.log(srcFilename, '->', destFilename);
+  }
+}
+
+argv._.forEach(function (srcPath) {
+  if (!fs.existsSync(srcPath)) {
+    console.warn('File or directory does not exist:', srcPath);
+  }
+  transformFileOrDir(srcPath);
+});
