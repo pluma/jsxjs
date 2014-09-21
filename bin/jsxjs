@@ -10,6 +10,10 @@ var argv = require('yargs')
 .example('$0 src lib', 'Convert files in "src" folder into "lib" folder')
 .boolean('all').alias('all', 'a')
 .describe('all', 'Convert all files, regardless of file extension.')
+.boolean('es6')
+.describe('es6', 'Enable ES6 transforms.')
+.boolean('source-map')
+.describe('source-map', 'Enable inline source maps.')
 .boolean('no-magic')
 .describe('no-magic', 'Disable special handling of missing @jsx pragmas.')
 .boolean('verbose').alias('verbose', 'v')
@@ -56,7 +60,10 @@ function transformFile(srcFilename, srcRoot) {
 
   mkdirp.sync(destDirname, parseInt('0775', 8));
 
-  if (isJsx) content = transform(content);
+  if (isJsx) content = transform(content, {
+    harmony: argv.es6,
+    sourceMap: argv.sourceMap
+  });
   fs.writeFileSync(destFilename, content);
   if (argv.verbose) {
     console.log(srcFilename, '->', destFilename);
