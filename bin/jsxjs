@@ -14,8 +14,6 @@ var argv = require('yargs')
 .describe('es6', 'Enable ES6 transforms.')
 .boolean('source-map')
 .describe('source-map', 'Enable inline source maps.')
-.boolean('no-magic')
-.describe('no-magic', 'Disable special handling of missing @jsx pragmas.')
 .boolean('verbose').alias('verbose', 'v')
 .describe('verbose', 'Log all conversions.')
 .demand(2, 'Need to specify at least one source file/folder and the output folder.')
@@ -41,33 +39,27 @@ function transformDir(srcPath, srcRoot) {
 
 function transformFile(srcFilename, srcRoot) {
   var ext = path.extname(srcFilename);
-  if (!argv.all && ext !== '.js' && ext !== '.jsx') return;
+  if (!argv.all && !ext.match(/^\.jsx?$/)) return;
 
   var content = fs.readFileSync(srcFilename, 'utf8');
-  var isJsx = argv.noMagic || content.indexOf('@jsx') !== -1;
-  if (!argv.noMagic && ext === '.jsx' && !isJsx) {
-    content = '/** @jsx React.DOM */\n' + content;
-    isJsx = true;
-  }
+  var isJsx = argv.all || ext === '.jsx';
 
   var destFilename = srcRoot
   ? path.join(dest, path.relative(srcRoot, srcFilename))
   : path.join(dest, path.basename(srcFilename));
   var destDirname = path.dirname(destFilename);
-  if (ext !== '.js') {
-    destFilename = destFilename.slice(0, -ext.length) + '.js';
-  }
+  if (ext !== '.js') destFilename = destFilename.slice(0, -ext.length) + '.js';
 
   mkdirp.sync(destDirname, parseInt('0775', 8));
 
-  if (isJsx) content = transform(content, {
-    harmony: argv.es6,
-    sourceMap: argv.sourceMap
-  });
-  fs.writeFileSync(destFilename, content);
-  if (argv.verbose) {
-    console.log(srcFilename, '->', destFilename);
+  if (isJsx) {
+    content = transform(content, {
+      harmony: argv.es6,
+      sourceMap: argv.sourceMap
+    });
   }
+  fs.writeFileSync(destFilename, content);
+  if (argv.verbose) console.log(srcFilename, '->', destFilename);
 }
 
 argv._.forEach(function (srcPath) {
