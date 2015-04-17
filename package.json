@@ -1,6 +1,6 @@
 {
   "name": "jsxjs",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "CLI for converting jsx files to js, without losing your sanity.",
   "bin": {
     "jsxjs": "./bin/jsxjs"
