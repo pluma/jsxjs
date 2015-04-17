@@ -1,6 +1,8 @@
 # Synopsis
 
-Convert JSX files to JS, while remaining your sanity.
+**NOTE:** This package is unmaintained. The [babel](https://www.npmjs.com/package/babel) package provides a more full-featured replacement.
+
+Convert JSX files to JS, without losing your sanity.
 
 [![license - MIT](http://b.repl.ca/v1/license-MIT-blue.png)](http://pluma.mit-license.org) [![Flattr this](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=pluma&url=https://github.com/pluma/jsxjs)
 
